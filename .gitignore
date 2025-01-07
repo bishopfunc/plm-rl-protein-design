@@ -3,4 +3,3 @@ __pycache__/**.pyc
 oracle_lib/ckpt/esm2_t33_650M_UR50D.pt
 *.zip
 wandb
-oracle_lib/__pycache__/__init__.cpython-310.pyc
