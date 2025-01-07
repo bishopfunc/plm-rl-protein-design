@@ -10,7 +10,7 @@ class MutationEnv(gym.Env):
     wt_seq: 配列の長さ（= 配列の各要素を アミノ酸番号 で表現）
     max_steps: 1エピソード内で実行できる最大ステップ数
     """
-    def __init__(self, wt_seq: Optional[str] = None, proxy: Optional[GFPScorer] = None):
+    def __init__(self, wt_seq: Optional[str] = None, proxy: Optional[GFPScorer] = None, max_steps: int = 20):
         super().__init__()
         self.wt_seq = wt_seq
         self.length = len(wt_seq)
@@ -28,6 +28,9 @@ class MutationEnv(gym.Env):
 
         # エピソードを初期化
         self.sequence = None
+        self.pos = None
+        self.max_steps = max_steps
+        self.steps = 0
         
     def _calc_reward(self, sequence):
         """
@@ -44,34 +47,37 @@ class MutationEnv(gym.Env):
         super().reset(seed=seed)
 
         self.sequence = np.array(seq_to_idx(self.wt_seq))
-
+        self.pos = self.get_random_pos()
+        self.steps = 0
         observation = {
             "sequence": self.sequence,
-            "position": 0,
+            "position": self.pos,
         }
         info = {}
         return observation, info
         
     def get_random_pos(self):
-        return np.random.randint(self.length)
+        return self.observation_space.sample()["position"]
     
     def step(self, action):
         """
         action = mut: 変異先のアミノ酸番号 (0 ~ 19)
         """        
-        mut =  action
-        pos = self.get_random_pos() # 状態遷移におけるノイズのようなもので、ランダムに変異位置を選択
-        observation = {
-            "sequence": self.sequence,
-            "position": pos,
-        }
-        self.sequence[pos] = mut  # 変異を適用
+        mut = action
+         # 状態遷移におけるノイズのようなもので、ランダムに変異位置を選択
+        self.sequence[self.pos] = mut  # 変異を適用
+        self.steps += 1
+  
         reward = self._calc_reward([idx_to_seq(self.sequence)])
-        done = True # 1ステップで終了
+        # done = True # 1ステップで終了
+        done = (self.steps >= self.max_steps)
         truncated = False
-
       
         info = {}
+        observation = {
+            "sequence": self.sequence,
+            "position": self.pos,
+        }
         return observation, reward, done, truncated, info
 
 if __name__ == "__main__":

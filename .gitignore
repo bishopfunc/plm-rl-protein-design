@@ -3,3 +3,4 @@
 oracle_lib/ckpt/esm2_t33_650M_UR50D.pt
 *.zip
 wandb
+tensorboard_logs

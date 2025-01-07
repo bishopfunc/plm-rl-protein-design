@@ -9,30 +9,21 @@ warnings.filterwarnings("ignore")
 from wandb.integration.sb3 import WandbCallback
 import os
 import wandb
+wandb.tensorboard.patch(root_logdir="tensorboard_logs")
 run = wandb.init(project="PLMxRL", name="pos_train", monitor_gym=True)
 
-class PositionPolicyEnvWrapper:
-    def __init__(self, env, policy):
-        self.env = env
-        self.policy = policy
-    
-    def train(self, total_timesteps=10000, callback=None):
-        self.policy.learn(total_timesteps=total_timesteps, callback=callback)
-      
-      
 if __name__ == "__main__":
     gfp_seq = WT["GFP"]
     env = PositionEnv(wt_seq=gfp_seq, proxy=GFPScorer())
     policy = PositionPolicy(env)
-    wrapper = PositionPolicyEnvWrapper(env, policy)
     # total_timesteps = 1_000_000
     total_timesteps = 1
     tqdm_callback = WandbLoggingCallback(total_timesteps)
-    os.makedirs("pos_policy", exist_ok=True)
-    wandb_callback = WandbCallback(model_save_path='pos_policy')
+    policy.learn(total_timesteps=total_timesteps, callback=tqdm_callback)
+    policy.save("pos_policy")
+    # os.makedirs("pos_policy", exist_ok=True)
+    # wandb_callback = WandbCallback(model_save_path='pos_policy')
     
-    wrapper.train(total_timesteps=total_timesteps, callback=[tqdm_callback, wandb_callback])
-    wrapper.policy.save("pos_policy")
     
     # サンプリング
     obs, info = env.reset()

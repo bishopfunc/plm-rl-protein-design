@@ -4,5 +4,5 @@ numpy
 tqdm
 torchtyping
 transformers
-stable_baselines3
+stable-baselines3[extra]
 wandb

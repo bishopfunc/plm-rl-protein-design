@@ -1,7 +1,7 @@
 from mut_env import MutationEnv
 from pos_env import PositionEnv
 from policy import MutationPolicy, PositionPolicy
-from constants import WT, idx_to_seq, seq_to_idx
+from constants import WT, idx_to_seq, seq_to_idx, IDXTOAA
 from callback import CustomTQDMCallback, WandbLoggingCallback
 from proxy import GFPScorer
 import warnings 
@@ -9,30 +9,20 @@ warnings.filterwarnings("ignore")
 from wandb.integration.sb3 import WandbCallback
 import os
 import wandb
+wandb.tensorboard.patch(root_logdir="tensorboard_logs")
 run = wandb.init(project="PLMxRL", name="mut_train", monitor_gym=True)
-
-class MutationPolicyEnvWrapper:
-    def __init__(self, env, policy):
-        self.env = env
-        self.policy = policy
-    
-    def train(self, total_timesteps=10000, callback=None):
-        self.policy.learn(total_timesteps=total_timesteps, callback=callback)
-
       
 if __name__ == "__main__":
     gfp_seq = WT["GFP"]
     env = MutationEnv(wt_seq=gfp_seq, proxy=GFPScorer())
     policy = MutationPolicy(env)
-    wrapper = MutationPolicyEnvWrapper(env, policy)
-    total_timesteps = 10_000
-    # total_timesteps = 1_000_000
+    total_timesteps = 1_000_000
     tqdm_callback = WandbLoggingCallback(total_timesteps)
-    os.makedirs("mut_policy", exist_ok=True)
-    wandb_callback = WandbCallback(model_save_path='mut_policy')
-
-    wrapper.train(total_timesteps=total_timesteps, callback=tqdm_callback)
-    wrapper.policy.save("mut_policy")
+    policy.learn(total_timesteps=total_timesteps, callback=tqdm_callback)
+    policy.save("mut_policy")
+    # total_timesteps = 1_000_000
+    # os.makedirs("mut_policy", exist_ok=True)
+    # wandb_callback = WandbCallback(model_save_path='mut_policy')
     
     # サンプリング
     obs, info = env.reset()
@@ -41,6 +31,8 @@ if __name__ == "__main__":
         action, _ = policy.predict(obs, deterministic=True)
         obs, reward, _, _, info = env.step(action)
         env.reset()
-        print(f"Action={action}, Reward={reward:.3f}, Obs={idx_to_seq(obs['sequence'])}")
+        pos = obs['position']
+        mut_aa = IDXTOAA[action.item()]
+        print(f"Action={mut_aa}, Reward={reward:.3f}, Obs={idx_to_seq(obs['sequence'])}")
     
 wandb.finish()
