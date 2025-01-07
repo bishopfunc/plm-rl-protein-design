@@ -1,0 +1,8 @@
+gymnasium
+pandas
+numpy
+tqdm
+torchtyping
+transformers
+stable_baselines3
+wandb
