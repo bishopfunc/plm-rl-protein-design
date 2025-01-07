@@ -1,7 +1,0 @@
-defaults:
-  - base
-
-_target_: gflownet.proxy.aptamers.Aptamers
-
-oracle_id: length
-norm: True

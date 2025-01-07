@@ -1,4 +1,0 @@
-logdir:
-  root: /home/alex/logs/gflownet
-data:
-  root: /home/alex/datasets

@@ -1,7 +1,0 @@
-defaults:
-  - base
-
-_target_: gflownet.proxy.tetris.Tetris
-
-normalize: True
-

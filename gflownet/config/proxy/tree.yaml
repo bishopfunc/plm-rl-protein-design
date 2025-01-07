@@ -1,6 +1,0 @@
-defaults:
-  - base
-
-_target_: gflownet.proxy.tree.TreeProxy
-
-use_prior: False

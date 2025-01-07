@@ -1,4 +1,0 @@
-logdir:
-  root: /network/scratch/m/michal.koziarski/logs/gflownet
-data:
-  root: /home/mila/m/michal.koziarski/gflownet/data
