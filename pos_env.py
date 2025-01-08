@@ -1,7 +1,7 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from constants import seq_to_idx, idx_to_seq, WT, ALPHABET, AATOIDX
+from constants import seq_to_idx, idx_to_seq, WT, ALPHABET, AATOIDX, random_mutation
 from typing import Optional
 from proxy import GFPScorer
 from plm_as_policy import PLMPolicy
@@ -24,6 +24,7 @@ class PositionEnv(gym.Env):
         self.wt_seq = wt_seq
         self.length = len(wt_seq)
         self.max_steps = max_steps
+        self.mut_num = int(self.length * 0.10) # 変異数: 配列長の10%
         
         # 観測空間: アミノ酸配列 各要素が 0~19 のいずれか
         self.observation_space = spaces.Box(low=0, high=19, shape=(self.length,), dtype=np.int32)
@@ -54,7 +55,7 @@ class PositionEnv(gym.Env):
         """
         super().reset(seed=seed)
 
-        self.sequence = seq_to_idx(self.wt_seq)
+        self.sequence = np.array(seq_to_idx(self.wt_seq))
         self.steps = 0
 
         # 観測として、現在の配列を返す

@@ -1,7 +1,7 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from constants import seq_to_idx, idx_to_seq, WT
+from constants import seq_to_idx, idx_to_seq, WT, random_mutation
 from typing import Optional
 from proxy import GFPScorer
 
@@ -16,7 +16,7 @@ class MutationEnv(gym.Env):
         self.length = len(wt_seq)
         self.proxy = proxy
         self.proxy.setup() if proxy is not None else None # プロキシの初期化        
-        
+        self.max_mut_num = int(self.length * 0.30) # 変異数: 配列長の30%
         # 観測空間: アミノ酸配列 と 変異位置 の組み合わせ
         self.observation_space = spaces.Dict({
             "sequence": spaces.Box(low=0, high=19, shape=(self.length,), dtype=np.int32),
@@ -46,7 +46,9 @@ class MutationEnv(gym.Env):
         """
         super().reset(seed=seed)
 
-        self.sequence = np.array(seq_to_idx(self.wt_seq))
+        mut_num = np.random.randint(1, self.max_mut_num)
+        self.sequence = seq_to_idx(random_mutation(self.wt_seq, mut_num))
+
         self.pos = self.get_random_pos()
         self.steps = 0
         observation = {

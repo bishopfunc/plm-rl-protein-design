@@ -2,7 +2,7 @@ from mut_env import MutationEnv
 from pos_env import PositionEnv
 from policy import MutationPolicy, PositionPolicy
 from constants import WT, idx_to_seq, seq_to_idx, IDXTOAA
-from callback import CustomTQDMCallback, WandbLoggingCallback
+from callback import CustomTQDMCallback, WandbLoggingCallback, SaveWeightsCallback
 from proxy import GFPScorer
 import warnings 
 warnings.filterwarnings("ignore")
@@ -17,12 +17,10 @@ if __name__ == "__main__":
     env = MutationEnv(wt_seq=gfp_seq, proxy=GFPScorer())
     policy = MutationPolicy(env)
     total_timesteps = 1_000_000
-    tqdm_callback = WandbLoggingCallback(total_timesteps)
-    policy.learn(total_timesteps=total_timesteps, callback=tqdm_callback)
+    log_callback = WandbLoggingCallback(save_freq=1000)
+    save_callback = SaveWeightsCallback(save_freq=1000, save_path='mut_policy')
+    policy.learn(total_timesteps=total_timesteps, callback=[log_callback, save_callback])
     policy.save("mut_policy")
-    # total_timesteps = 1_000_000
-    # os.makedirs("mut_policy", exist_ok=True)
-    # wandb_callback = WandbCallback(model_save_path='mut_policy')
     
     # サンプリング
     obs, info = env.reset()
