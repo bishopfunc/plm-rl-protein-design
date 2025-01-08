@@ -10,6 +10,7 @@ warnings.filterwarnings("ignore")
 import random
 import torch
 from oracle_lib.config import get_fitness_info
+import pandas as pd
 
 if __name__ == "__main__":
     gfp_seq = WT["GFP"]
@@ -33,6 +34,9 @@ if __name__ == "__main__":
     gfp_seq_aa = WT["GFP"]
     gfp_seq_onehot = seq_to_one_hot(gfp_seq_aa)
     gfp_seq = seq_to_idx(gfp_seq_aa)
+    
+    data = pd.read_csv(f'/home/ubuntu/workspace/plm-rl-protein-design/oracle_lib/data/GFP/hard.csv')[["sequence", "target"]]
+    inits = data["sequence"].tolist()
     for step in range(max_steps):
         with torch.no_grad():
             pos, _ = pos_policy.predict(gfp_seq, deterministic=True)
@@ -40,7 +44,8 @@ if __name__ == "__main__":
                 "sequence": gfp_seq,
                 "position": pos,
             }, deterministic=True)
-        pos = pos.item()
+        # pos = pos.item()
+        pos = random.randint(0, len(gfp_seq)-1)
         mut = mut.item()
         gfp_seq[pos] = mut
         sequences_aa.append(idx_to_seq(gfp_seq))
@@ -49,7 +54,7 @@ if __name__ == "__main__":
             gfp_seq_aa = idx_to_seq(gfp_seq)
             print(f"Step={step} Pos={pos}, Mut={IDXTOAA[mut]} Reward={proxy([idx_to_seq(gfp_seq)])[0]:.3f}")
             # print(f"Step={step} Pos={pos}, Mut={IDXTOAA[mut]} Reward={proxy([idx_to_seq(gfp_seq)])[0]:.3f}, Obs={gfp_seq_aa}")
-            fitness, diversity, novelty, high = evaluator.evaluate(sequences_aa, [gfp_seq_onehot])
+            fitness, diversity, novelty, high = evaluator.evaluate(sequences_aa, inits)
             print(f"Fitness={fitness:.3f}, Diversity={diversity:.3f}, Novelty={novelty:.3f}, High={high:.3f}")
            
             
