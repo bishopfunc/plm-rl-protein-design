@@ -19,7 +19,7 @@ if __name__ == "__main__":
     pos_policy.load(path="pos_policy")
     mut_env = MutationEnv(wt_seq=gfp_seq, proxy=proxy)
     mut_policy = MutationPolicy(env=mut_env)
-    mut_policy.load(path="mut_policy")
+    mut_policy.load(path="mut_policy/model_weights_50000")
     
     length, min_fitness, max_fitness = get_fitness_info("GFP")
     evaluator = Evaluator(protein="GFP", max_target=max_fitness, min_target=min_fitness, device="cuda")
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     sequences_onehot = []
     
     max_steps = 10_000_000
-    log_interval = 1_000
+    log_interval = 100
     gfp_seq_aa = WT["GFP"]
     gfp_seq_onehot = seq_to_one_hot(gfp_seq_aa)
     gfp_seq = seq_to_idx(gfp_seq_aa)
